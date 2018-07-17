@@ -3,6 +3,7 @@ import base64
 import configparser
 import logging
 import os.path
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as etree
@@ -18,6 +19,7 @@ cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
 OBS_cfg = cfg[OBS_API]
+MAX_PROCS = 5
 
 pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
 pwd_mgr.add_password(realm=None, uri=OBS_API,
@@ -59,6 +61,7 @@ def rdelete(pkg, proj, comment):
     comment = urllib.parse.quote_plus(comment)
     rdelete_URL = src_URL.format(f'{proj}/{pkg}?comment={comment}')
     headers = {}
+    time.sleep(1)
     return 'url:\n%s' % rdelete_URL
 
 def linkpac(pkg, proj_source):
@@ -70,6 +73,7 @@ def linkpac(pkg, proj_source):
     # GET https://api.opensuse.org/source/devel:languages:python:backports/python-atom?rev=latest
     # PUT https://api.opensuse.org/source/devel:languages:python:backports/python-atom/_link
     proj_target = 'openSUSE:Factory'
+    time.sleep(1)
     return f'osc linkpac {proj_target} {pkg} {proj_source}'
 
 backports_python = {x for x in get_xml_list(src_URL.format(project))}
@@ -85,7 +89,7 @@ additional_links = {"libcryptopp", "libsodium", "qpid-proton",
 factory_python = factory_python | additional_links
 
 futures = []
-with ThreadPoolExecutor(max_workers=5) as executor:
+with ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
     # remove packages not in tumbleweed
     for i in backports_python - factory_python:
         msg = f"Package {i} not in whitelist or openSUSE:Factory"
