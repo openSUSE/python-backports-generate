@@ -2,9 +2,10 @@
 import asyncio
 import async_timeout
 import aiohttp
+import configparser
 import logging
+import os.path
 import xml.etree.ElementTree as etree
-from subprocess import check_call, check_output
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
@@ -13,11 +14,15 @@ log = logging.getLogger('asyncio')
 project = "devel:languages:python:backports"
 
 loop = asyncio.get_event_loop()
-auth = aiohttp.BasicAuth(login='mcepl', password='7vR$7By@Lj')
+cfg = configparser.ConfigParser(os.path.expanduser('~/.config/osc/oscrc'))
+OBS_cfg = cfg['https://api.opensuse.org']
+auth = aiohttp.BasicAuth(login=OBS_cfg['user'], password=OBS_cfg['pass'])
 client = aiohttp.ClientSession(loop=loop, auth=auth)
 
-# curl -u '' https://api.opensuse.org/source/devel:languages:python:backports
 ls_URL = "https://api.opensuse.org/source/{}"
+
+backports_python = None
+factory_python = None
 
 async def get_xml_list(url):
     with async_timeout.timeout(10):
@@ -27,33 +32,28 @@ async def get_xml_list(url):
                 log.debug('event = %s, element = %s', event, element)
                 if element.tag == 'entry':
                     yield element.attr('name')
+            await response.release()
 
-async def get_backports():
-    raw_data = await get_xml_list(ls_URL.format(project))
-    print(set(raw_data))
+def do_work():
+    global backports_python, factory_python
+    backports_python = {x async for x in get_xml_list(ls_URL.format(project))}
+    factory_python = {x async for x in get_xml_list(ls_URL.format('openSUSE:Factory'))}
+    python_itself = {"python-base", "python3-base", "python", "python3",
+                     "python-doc", "python3-doc"}
 
-loop.run_until_complete(get_backports())
+    # extra packages we want there
+    additional_links = {"libcryptopp", "libsodium", "qpid-proton",
+                        "openstack-macros"}
 
-##
-##
-## backports_python =
-## factory_python_raw = check_output(['osc', 'ls', 'openSUSE:Factory']).split()
-## factory_python = {x for x in factory_python_raw if x.startswith('python')}
-##
-## python_itself = {"python-base", "python3-base", "python", "python3",
-##                  "python-doc", "python3-doc"}
-##
-## # extra packages we want there
-## additional_links = {"libcryptopp", "libsodium", "qpid-proton",
-##                     "openstack-macros"}
-##
-## factory_python = factory_python | additional_links
-##
-## # remove packages not in tumbleweed
-## for i in backports_python - factory_python:
-##     msg = f"Package {i} not in whitelist or openSUSE:Factory"
-##     check_call(['osc', 'rdelete', i, '-m', msg])
-##
-## # add packages not in yet
-## for i in factory_python - python_itself - backports_python:
-##     check_call(['osc', 'linkpac', 'openSUSE:Factory', i, project])
+    factory_python = factory_python | additional_links
+
+    # remove packages not in tumbleweed
+    for i in backports_python - factory_python:
+        msg = f"Package {i} not in whitelist or openSUSE:Factory"
+        print(['osc', 'rdelete', i, '-m', msg])
+
+    # add packages not in yet
+    for i in factory_python - python_itself - backports_python:
+        print(['osc', 'linkpac', 'openSUSE:Factory', i, project])
+
+loop.run_until_complete(do_work())
