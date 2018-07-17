@@ -6,7 +6,7 @@ import os.path
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as etree
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
@@ -85,7 +85,7 @@ additional_links = {"libcryptopp", "libsodium", "qpid-proton",
 factory_python = factory_python | additional_links
 
 futures = []
-with ProcessPoolExecutor() as executor:
+with ThreadPoolExecutor(max_workers=5) as executor:
     # remove packages not in tumbleweed
     for i in backports_python - factory_python:
         msg = f"Package {i} not in whitelist or openSUSE:Factory"
