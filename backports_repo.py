@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import base64
-import concurrent.futures
 import configparser
 import logging
 import os.path
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as etree
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
@@ -59,7 +59,7 @@ def rdelete(pkg, proj, comment):
     comment = urllib.parse.quote_plus(comment)
     rdelete_URL = src_URL.format(f'{proj}/{pkg}?comment={comment}')
     headers = {}
-    print('url:\n%s' % rdelete_URL)
+    return 'url:\n%s' % rdelete_URL
 
 def linkpac(pkg, proj_source):
     # GET https://api.opensuse.org/source/devel%3Alanguages%3Apython%3Abackports/python-atom/_meta
@@ -70,7 +70,7 @@ def linkpac(pkg, proj_source):
     # GET https://api.opensuse.org/source/devel:languages:python:backports/python-atom?rev=latest
     # PUT https://api.opensuse.org/source/devel:languages:python:backports/python-atom/_link
     proj_target = 'openSUSE:Factory'
-    print(['osc', 'linkpac', proj_target, pkg, proj_source])
+    return f'osc linkpac {proj_target} {pkg} {proj_source}'
 
 backports_python = {x for x in get_xml_list(src_URL.format(project))}
 factory_python = {x for x in get_xml_list(src_URL.format('openSUSE:Factory'))
@@ -84,13 +84,21 @@ additional_links = {"libcryptopp", "libsodium", "qpid-proton",
 
 factory_python = factory_python | additional_links
 
-# remove packages not in tumbleweed
-for i in backports_python - factory_python:
-    msg = f"Package {i} not in whitelist or openSUSE:Factory"
-    log.debug('rdelete i = %s', i)
-    rdelete(i, project, msg)
+futures = []
+with ProcessPoolExecutor() as executor:
+    # remove packages not in tumbleweed
+    for i in backports_python - factory_python:
+        msg = f"Package {i} not in whitelist or openSUSE:Factory"
+        log.debug('rdelete i = %s', i)
+        futures.append(executor.submit(rdelete, i, project, msg))
 
-# add packages not in yet
-for i in factory_python - python_itself - backports_python:
-    log.debug('linkpac i = %s', i)
-    linkpac(i, project)
+    # add packages not in yet
+    for i in factory_python - python_itself - backports_python:
+        log.debug('linkpac i = %s', i)
+        futures.append(executor.submit(linkpac, i, project))
+
+results = []
+for f in as_completed(futures):
+    results.append(f.result())
+
+print(results)
