@@ -59,7 +59,8 @@ def rdelete(pkg, proj, comment):
     #        action/source/@package='python-pycrypto' or
     #        submit/source/@package='python-pycrypto')
     comment = urllib.parse.quote_plus(comment)
-    rdelete_URL = src_URL.format(f'{proj}/{pkg}?comment={comment}')
+    cmd_rest = '{}/{}?comment={}'.format(proj, pkg, comment)
+    rdelete_URL = src_URL.format(cmd_rest)
     headers = {}
     time.sleep(1)
     return 'url:\n%s' % rdelete_URL
@@ -74,7 +75,7 @@ def linkpac(pkg, proj_source):
     # PUT https://api.opensuse.org/source/devel:languages:python:backports/python-atom/_link
     proj_target = 'openSUSE:Factory'
     time.sleep(1)
-    return f'osc linkpac {proj_target} {pkg} {proj_source}'
+    return 'osc linkpac {} {} {}'.format(proj_target, pkg, proj_source)
 
 backports_python = {x for x in get_xml_list(src_URL.format(project))}
 factory_python = {x for x in get_xml_list(src_URL.format('openSUSE:Factory'))
