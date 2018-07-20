@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import concurrent.futures
 import configparser
 import logging
 import os.path
@@ -7,7 +8,6 @@ import sys
 import time
 import urllib.request
 import xml.etree.ElementTree as etree
-import concurrent.futures
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
@@ -37,7 +37,7 @@ src_URL = "%s/source/{}" % OBS_API
 def project_list(url):
     with opener.open(url, timeout=10) as response:
         assert response.status == 200
-        for event, element in etree.iterparse(response):
+        for _, element in etree.iterparse(response):
             if element.tag == 'entry':
                 yield element.attrib['name']
 
