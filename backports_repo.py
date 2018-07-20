@@ -63,7 +63,8 @@ python_itself = {"python-base", "python3-base", "python", "python3",
 
 # extra packages we want there
 additional_links = {"libcryptopp", "libsodium", "qpid-proton",
-                    "openstack-macros"}
+                    "python-pycrypto",  # TEMP 2018/07 remove 08
+                    "openstack-macros", }
 
 factory_python = factory_python | additional_links
 
