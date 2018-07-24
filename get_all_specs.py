@@ -52,7 +52,7 @@ def get_spec_file(pname):
                 if not buf:
                     break
                 outf.write(buf)
-    time.time(1)
+    time.sleep(0.1)
 
 
 packages = (x for x in project_list(src_URL.format('openSUSE:Factory')))
