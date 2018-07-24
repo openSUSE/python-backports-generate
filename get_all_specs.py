@@ -67,6 +67,7 @@ for f in concurrent.futures.as_completed(futures):
     results.append(f.result())
 
 results = [x for x in results]
+log.info('Downloaded %d files.', len(packages))
 log.debug('results:\n%s', results)
 
 # sys.exit(len(results))
