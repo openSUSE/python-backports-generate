@@ -18,7 +18,7 @@ cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
 OBS_cfg = cfg[OBS_API]
-MAX_PROCS = 10
+MAX_PROCS = 100
 
 # available in python >= 3.5
 pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
