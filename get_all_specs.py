@@ -2,7 +2,10 @@
 import configparser
 import logging
 import os.path
+import queue
 import time
+import sys
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as etree
 import concurrent.futures
@@ -31,6 +34,7 @@ opener = urllib.request.build_opener(https_handler, auth_handler)
 
 src_URL = "%s/source/{}" % OBS_API
 
+failed = queue.Queue()
 
 def project_list(url):
     with opener.open(url, timeout=10) as response:
@@ -42,32 +46,35 @@ def project_list(url):
 
 def get_spec_file(pname):
     get_URL = src_URL.format('openSUSE:Factory/{}/{}.spec')
-    log.info('Getting %s', pname)
-    with opener.open(get_URL.format(pname, pname)) as response:
-        assert response.status == 200
-        with open('{}.spec'.format(pname), 'wb') as outf:
-            while True:
-                buf = response.read(1024*8)
-                log.debug('buf = %d', len(buf))
-                if not buf:
-                    break
-                outf.write(buf)
-    time.sleep(0.1)
-
+    print(pname[0], file=sys.stderr, end='', flush=True)
+    try:
+        with opener.open(get_URL.format(pname, pname)) as response:
+            with open('{}.spec'.format(pname), 'wb') as outf:
+                while True:
+                    buf = response.read(1024*8)
+                    if not buf:
+                        break
+                    outf.write(buf)
+            return True, pname, 200
+    except urllib.error.URLError:
+        return False, pname, response.status
 
 packages = (x for x in project_list(src_URL.format('openSUSE:Factory')))
 
 futures = []
 with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
-    for package in packages:
-        futures.append(executor.submit(get_spec_file, package))
+    futures = executor.map(get_spec_file, packages)
 
-results = []
+failed_tasks = []
 for f in concurrent.futures.as_completed(futures):
-    results.append(f.result())
+    task = f.result()
+    if not task[0]:
+        failed_tasks.append(task)
 
-results = [x for x in results]
-log.info('Downloaded %d files.', len(packages))
-log.debug('results:\n%s', results)
+print(file=sys.stderr)
+log.info('Downloaded %d files.', len(packages) - len(failed_tasks))
 
-# sys.exit(len(results))
+for task in failed_tasks:
+    log.error('Downloading of %s failed with status %d', task[1], task[2])
+
+sys.exit(0 if len(failed_tasks) == 0 else 1)
