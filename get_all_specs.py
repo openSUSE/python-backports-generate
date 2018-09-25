@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import argparse
 import configparser
 import logging
 import os.path
@@ -14,13 +15,13 @@ logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.INFO)
 log = logging.getLogger('get_all_specs')
 
-project = "devel:languages:python:backports"
-factory_name = "openSUSE:Factory"
+FACTORY_NAME = "openSUSE:Factory"
 
 cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
 OBS_cfg = cfg[OBS_API]
+
 MAX_PROCS = 100
 
 # available in python >= 3.5
@@ -30,6 +31,7 @@ pwd_mgr.add_password(realm=None, uri=OBS_API,
                      passwd=OBS_cfg['pass'])
 https_handler = urllib.request.HTTPSHandler(debuglevel=0)
 auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
+# https://build.opensuse.org/apidocs/index
 opener = urllib.request.build_opener(https_handler, auth_handler)
 
 src_URL = "%s/source/{}" % OBS_API
@@ -44,11 +46,12 @@ def project_list(url):
                 yield element.attrib['name']
 
 
-def get_spec_file(pname):
-    get_URL = src_URL.format('openSUSE:Factory/{}/{}.spec')
+def get_spec_file(proj_name, pname):
+    get_URL = src_URL.format('{}/{}/{}.spec').format(proj_name, pname, pname)
+    log.debug('get_URL = %s', get_URL)
     print(pname[0], file=sys.stderr, end='', flush=True)
     try:
-        with opener.open(get_URL.format(pname, pname)) as response:
+        with opener.open(get_URL) as response:
             with open('{}.spec'.format(pname), 'wb') as outf:
                 while True:
                     buf = response.read(1024*8)
@@ -59,17 +62,26 @@ def get_spec_file(pname):
     except urllib.error.URLError:
         return False, pname, response.status
 
-packages = (x for x in project_list(src_URL.format('openSUSE:Factory')))
+
+arg_p = argparse.ArgumentParser(description='Collect all SPEC files for a project.')
+arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME)
+args = arg_p.parse_args()
+proj = args.project_name
+
+packages = (x for x in project_list(src_URL.format(proj)))
 
 futures = []
 with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
-    futures = executor.map(get_spec_file, packages)
+    for id_proj in packages:
+        futures.append(executor.submit(get_spec_file, proj, id_proj))
 
 failed_tasks = []
 for f in concurrent.futures.as_completed(futures):
     task = f.result()
     if not task[0]:
         failed_tasks.append(task)
+
+log.debug('failed_tasks = %s', failed_tasks)
 
 print(file=sys.stderr)
 log.info('Downloaded %d files.', len(packages) - len(failed_tasks))
