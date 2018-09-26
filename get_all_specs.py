@@ -3,10 +3,12 @@ import argparse
 import configparser
 import logging
 import os.path
+import re
 import queue
 import time
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as etree
 import concurrent.futures
@@ -21,6 +23,7 @@ cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
 OBS_cfg = cfg[OBS_API]
+END_NUM_RE = re.compile(r'\.\d+$');
 
 MAX_PROCS = 100
 
@@ -47,10 +50,12 @@ def project_list(url):
 
 
 def get_spec_file(proj_name, pname):
-    get_URL = src_URL.format('{}/{}/{}.spec').format(proj_name, pname, pname)
-    log.debug('get_URL = %s', get_URL)
+    response = None
+    get_URL = src_URL.format('{}/{}/{}.spec?expand=1').format(
+        urllib.parse.quote(proj_name), pname, pname)
     print(pname[0], file=sys.stderr, end='', flush=True)
     try:
+        log.debug('get_URL = %s', get_URL)
         with opener.open(get_URL) as response:
             with open('{}.spec'.format(pname), 'wb') as outf:
                 while True:
@@ -58,9 +63,9 @@ def get_spec_file(proj_name, pname):
                     if not buf:
                         break
                     outf.write(buf)
-            return True, pname, 200
-    except urllib.error.URLError:
-        return False, pname, response.status
+            return True, pname, 200, ''
+    except (urllib.error.URLError, urllib.error.HTTPError) as ex:
+        return False, pname, ex.code, ex.reason
 
 
 arg_p = argparse.ArgumentParser(description='Collect all SPEC files for a project.')
@@ -68,11 +73,14 @@ arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME)
 args = arg_p.parse_args()
 proj = args.project_name
 
-packages = (x for x in project_list(src_URL.format(proj)))
+packages = (x for x in project_list(src_URL.format(proj))
+            if END_NUM_RE.search(x) is None)
 
 futures = []
-with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
+pkg_counter = 0
+with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_PROCS) as executor:
     for id_proj in packages:
+        pkg_counter += 1
         futures.append(executor.submit(get_spec_file, proj, id_proj))
 
 failed_tasks = []
@@ -84,9 +92,9 @@ for f in concurrent.futures.as_completed(futures):
 log.debug('failed_tasks = %s', failed_tasks)
 
 print(file=sys.stderr)
-log.info('Downloaded %d files.', len(packages) - len(failed_tasks))
+log.info('Downloaded %d files.', pkg_counter - len(failed_tasks))
 
 for task in failed_tasks:
-    log.error('Downloading of %s failed with status %d', task[1], task[2])
+    log.error('Downloading of %s failed with status %d:\n%s', task[1], task[2], task[3])
 
 sys.exit(0 if len(failed_tasks) == 0 else 1)
