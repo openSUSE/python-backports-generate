@@ -1,6 +1,8 @@
 #!/usr/bin/python3
+import appdirs
 import concurrent.futures
 import configparser
+import json
 import logging
 import os.path
 import subprocess
@@ -65,6 +67,17 @@ python_itself = {"python-base", "python3-base", "python", "python3",
 additional_links = {"libcryptopp", "libsodium", "qpid-proton",
                     "mypy",
                     "openstack-macros", }
+
+additional_conf_file = os.path.join(appdirs.user_config_dir(),
+                                    'osc', 'backports_repo.json')
+if os.path.exists(additional_conf_file):
+    with io.open(additional_conf_file) as conf_f:
+        obj = json.load(conf_f)
+        if 'additional_links' not in obj:
+            raise KeyError(
+                'No key "additional_links" found in the configuration file %s' %
+                additional_conf_file)
+        additional_links = set(obj['additional_links'])
 
 factory_python = factory_python | additional_links
 

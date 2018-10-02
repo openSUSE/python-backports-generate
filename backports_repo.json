@@ -1,0 +1,9 @@
+{
+    "additional_links": [
+        "mypy",
+        "qpid-proton",
+        "openstack-macros",
+        "libsodium",
+        "libcryptopp"
+    ]
+}
