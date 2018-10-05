@@ -37,7 +37,7 @@ auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
 # https://build.opensuse.org/apidocs/index
 opener = urllib.request.build_opener(https_handler, auth_handler)
 
-src_URL = "%s/source/{}" % OBS_API
+src_URL = "%s/source/{}?expand=1" % OBS_API
 
 failed = queue.Queue()
 
@@ -51,7 +51,7 @@ def project_list(url):
 
 def get_spec_file(proj_name, pname):
     response = None
-    get_URL = src_URL.format('{}/{}/{}.spec?expand=1').format(
+    get_URL = src_URL.format('{}/{}/{}.spec').format(
         urllib.parse.quote(proj_name), pname, pname)
     print(pname[0], file=sys.stderr, end='', flush=True)
     try:
