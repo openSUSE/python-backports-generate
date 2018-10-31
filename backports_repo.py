@@ -48,12 +48,16 @@ def project_list(url):
 
 def rdelete(pkg, proj):
     msg = "Package {} not in whitelist or {}".format(pkg, factory_name)
+    log.info("osc rdelete %(msg)s %(proj)s %(pkg)s" % {
+        'msg': msg, 'proj': proj, 'pkg': pkg})
     ret = subprocess.call(['osc', 'rdelete', '-m', msg, proj, pkg])
     time.sleep(1)
     return ret
 
 
 def linkpac(pkg, proj_source):
+    log.info("osc linkpac %(factory_name)s %(pkg)s %(proj_source)s" % {
+        'factory_name': factory_name, 'pkg': pkg, 'proj_source': proj_source})
     ret = subprocess.call(['osc', 'linkpac', factory_name, pkg, proj_source])
     time.sleep(1)
     return ret
