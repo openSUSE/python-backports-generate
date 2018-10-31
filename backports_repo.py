@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-import appdirs
 import concurrent.futures
 import configparser
+import io
 import json
 import logging
 import os.path
@@ -10,6 +10,8 @@ import sys
 import time
 import urllib.request
 import xml.etree.ElementTree as etree
+
+import appdirs
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
@@ -75,11 +77,15 @@ if os.path.exists(additional_conf_file):
         obj = json.load(conf_f)
         if 'additional_links' not in obj:
             raise KeyError(
-                'No key "additional_links" found in the configuration file %s' %
+                '"additional_links" not found in configuration file %s' %
                 additional_conf_file)
         additional_links = set(obj['additional_links'])
 
 factory_python = factory_python | additional_links
+factory_python -= {
+    'python-Django',  # prefer python-Django1
+}
+
 
 futures = []
 with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
