@@ -69,13 +69,16 @@ factory_python = {x for x in project_list(src_URL.format(factory_name))
 python_itself = {"python-base", "python3-base", "python", "python3",
                  "python-doc", "python3-doc"}
 
-# extra packages we want there
-additional_links = {"libcryptopp", "libsodium", "qpid-proton",
-                    "mypy",
-                    "openstack-macros", }
-
 additional_conf_file = os.path.join(appdirs.user_config_dir(),
                                     'osc', 'backports_repo.json')
+
+# Fall back to in-tree copy
+if not os.path.exists(additional_conf_file):
+    additional_conf_file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), 'backports_repo.json')
+
+# extra packages we want there
+additional_links = set()
 if os.path.exists(additional_conf_file):
     with io.open(additional_conf_file) as conf_f:
         obj = json.load(conf_f)
