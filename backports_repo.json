@@ -4,6 +4,7 @@
         "qpid-proton",
         "openstack-macros",
         "libsodium",
-        "libcryptopp"
+        "libcryptopp",
+        "redis"
     ]
 }
