@@ -18,7 +18,6 @@ logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
 log = logging.getLogger('backports_repo')
 
-MAX_PROCS = 5
 
 def _get_osc_config(config_file, config_section):
     """
@@ -109,7 +108,7 @@ def main(args):
     }
 
     futures = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:
         # remove packages not in tumbleweed
         for package in backports_python - factory_python:
             futures.append(executor.submit(rdelete, package, project))
@@ -140,6 +139,9 @@ if __name__ == '__main__':
     parser.add_argument('--factory-project',
                         default='openSUSE:Factory',
                         help='The OpenBuildService Factory project. Defaults '
+                        'to %(default)s')
+    parser.add_argument('--max-workers', type=int,
+                        default=5, help='Number of workers. Defaults '
                         'to %(default)s')
 
     args = parser.parse_args()
