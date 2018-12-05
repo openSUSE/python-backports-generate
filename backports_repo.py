@@ -51,8 +51,8 @@ def project_list(opener, url):
                 yield element.attrib['name']
 
 
-def rdelete(pkg, proj):
-    msg = "Package {} not in whitelist or {}".format(pkg, factory_name)
+def rdelete(factory_project, pkg, proj):
+    msg = "Package {} not in whitelist or {}".format(pkg, factory_project)
     log.info("osc rdelete %(msg)s %(proj)s %(pkg)s" % {
         'msg': msg, 'proj': proj, 'pkg': pkg})
     ret = subprocess.call(['osc', 'rdelete', '-m', msg, proj, pkg])
@@ -60,31 +60,24 @@ def rdelete(pkg, proj):
     return ret
 
 
-def linkpac(pkg, proj_source):
-    log.info("osc linkpac %(factory_name)s %(pkg)s %(proj_source)s" % {
-        'factory_name': factory_name, 'pkg': pkg, 'proj_source': proj_source})
-    ret = subprocess.call(['osc', 'linkpac', factory_name, pkg, proj_source])
+def linkpac(factory_project, pkg, proj_source):
+    log.info("osc linkpac %(factory_project)s %(pkg)s %(proj_source)s" % {
+        'factory_project': factory_project, 'pkg': pkg, 'proj_source': proj_source})
+    ret = subprocess.call(['osc', 'linkpac', factory_project, pkg, proj_source])
     time.sleep(1)
     return ret
 
 
 def _get_additional_links_from_config():
-    conf_file = os.path.join(appdirs.user_config_dir(),
-                             'osc', 'backports_repo.json')
-    conf_file_fallback = os.path.join(
+    conf_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'backports_repo.json')
-    for f in [conf_file, conf_file_fallback]:
-        if not os.path.exists(f):
-            continue
-        with io.open(f) as conf_f:
-            obj = json.load(conf_f)
-            if 'additional_links' not in obj:
-                raise KeyError(
-                    '"additional_links" not found in configuration file %s' %
-                    additional_conf_file)
-        log.debug('Using additional links from {}'.format(f))
-        return set(obj['additional_links'])
-    return set()
+    with io.open(conf_file) as conf_f:
+        obj = json.load(conf_f)
+        if 'additional_links' not in obj:
+            raise KeyError(
+                '"additional_links" not found in configuration file %s' %
+                additional_conf_file)
+    return set(obj['additional_links'])
 
 
 def main(args):
@@ -111,11 +104,13 @@ def main(args):
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:
         # remove packages not in tumbleweed
         for package in backports_python - factory_python:
-            futures.append(executor.submit(rdelete, package, project))
+            futures.append(executor.submit(rdelete, args.factory_project,
+                                           package, args.backports_project))
 
         # add packages not in yet
         for package in factory_python - python_itself - backports_python:
-            futures.append(executor.submit(linkpac, package, project))
+            futures.append(executor.submit(linkpac, args.factory_project,
+                                           package, args.backports_project))
 
         results = []
         for f in concurrent.futures.as_completed(futures):
