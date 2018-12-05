@@ -69,22 +69,15 @@ def linkpac(pkg, proj_source):
 
 
 def _get_additional_links_from_config():
-    conf_file = os.path.join(appdirs.user_config_dir(),
-                             'osc', 'backports_repo.json')
-    conf_file_fallback = os.path.join(
+    conf_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'backports_repo.json')
-    for f in [conf_file, conf_file_fallback]:
-        if not os.path.exists(f):
-            continue
-        with io.open(f) as conf_f:
-            obj = json.load(conf_f)
-            if 'additional_links' not in obj:
-                raise KeyError(
-                    '"additional_links" not found in configuration file %s' %
-                    additional_conf_file)
-        log.debug('Using additional links from {}'.format(f))
-        return set(obj['additional_links'])
-    return set()
+    with io.open(conf_file) as conf_f:
+        obj = json.load(conf_f)
+        if 'additional_links' not in obj:
+            raise KeyError(
+                '"additional_links" not found in configuration file %s' %
+                additional_conf_file)
+    return set(obj['additional_links'])
 
 
 def main(args):
