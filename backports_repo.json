@@ -5,6 +5,7 @@
         "openstack-macros",
         "libsodium",
         "libcryptopp",
-        "redis"
+        "redis",
+        "librdkafka"
     ]
 }
