@@ -1,10 +1,14 @@
 {
     "additional_links": [
+        "grpc",
+        "mongodb",
         "mypy",
         "qpid-proton",
         "openstack-macros",
+        "protobuf",
         "libsodium",
         "libcryptopp",
+        "libxml2",
         "redis",
         "librdkafka"
     ]

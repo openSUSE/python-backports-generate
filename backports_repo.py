@@ -12,8 +12,6 @@ import time
 import urllib.request
 import xml.etree.ElementTree as etree
 
-import appdirs
-
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.DEBUG)
 log = logging.getLogger('backports_repo')
