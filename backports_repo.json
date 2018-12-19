@@ -8,7 +8,6 @@
         "protobuf",
         "libsodium",
         "libcryptopp",
-        "libxml2",
         "redis",
         "librdkafka"
     ]
