@@ -13,7 +13,7 @@ import urllib.request
 import xml.etree.ElementTree as etree
 
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 log = logging.getLogger('backports_repo')
 
 
@@ -75,7 +75,7 @@ def _get_additional_links_from_config():
             raise KeyError(
                 '"additional_links" not found in configuration file %s' %
                 additional_conf_file)
-    return set(obj['additional_links'])
+    return set(obj['additional_links']), set(obj['black_list'])
 
 
 def main(args):
@@ -91,12 +91,15 @@ def main(args):
     python_itself = {"python-base", "python3-base", "python", "python3",
                      "python-doc", "python3-doc"}
     # additional link we want to link from Factory to Backports
-    additional_links = _get_additional_links_from_config()
+    # also, list of all packages which are not Pyhon in the full meaning
+    # of the word
+    additional_links, black_list = _get_additional_links_from_config()
+    log.debug('additional_links = %s' % additional_links)
+    log.debug('black_list = %s' % black_list)
 
     factory_python = factory_python | additional_links
-    factory_python -= {
-        'python-Django',  # prefer python-Django1
-    }
+    factory_python -= black_list
+    log.debug('factory_python = %s' % factory_python)
 
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:

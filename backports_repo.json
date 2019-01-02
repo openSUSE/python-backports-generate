@@ -10,5 +10,9 @@
         "libcryptopp",
         "redis",
         "librdkafka"
+    ],
+    "black_list": [
+        "python-rpm",
+        "python-Django"
     ]
 }
