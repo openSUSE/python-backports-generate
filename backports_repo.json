@@ -6,6 +6,7 @@
         "qpid-proton",
         "openstack-macros",
         "protobuf",
+        "libmaxminddb",
         "libsodium",
         "libcryptopp",
         "redis",
