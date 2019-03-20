@@ -60,8 +60,11 @@ def rdelete(factory_project, pkg, proj):
 
 def linkpac(factory_project, pkg, proj_source):
     log.info("osc linkpac %(factory_project)s %(pkg)s %(proj_source)s" % {
-        'factory_project': factory_project, 'pkg': pkg, 'proj_source': proj_source})
-    ret = subprocess.call(['osc', 'linkpac', factory_project, pkg, proj_source])
+             'factory_project': factory_project,
+             'pkg': pkg,
+             'proj_source': proj_source})
+    ret = subprocess.call(['osc', 'linkpac',
+                          factory_project, pkg, proj_source])
     time.sleep(1)
     return ret
 
@@ -74,7 +77,7 @@ def _get_additional_links_from_config():
         if 'additional_links' not in obj:
             raise KeyError(
                 '"additional_links" not found in configuration file %s' %
-                additional_conf_file)
+                conf_file)
     return set(obj['additional_links']), set(obj['black_list'])
 
 
@@ -102,7 +105,8 @@ def main(args):
     log.debug('factory_python = %s' % factory_python)
 
     futures = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+    with concurrent.futures.ThreadPoolExecutor(
+            max_workers=args.max_workers) as executor:
         # remove packages not in tumbleweed
         for package in backports_python - factory_python:
             futures.append(executor.submit(rdelete, args.factory_project,
