@@ -4,6 +4,7 @@
         "mongodb",
         "mypy",
         "qpid-proton",
+        "openblas",
         "openstack-macros",
         "protobuf",
         "libmaxminddb",
