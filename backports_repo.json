@@ -1,17 +1,18 @@
 {
     "additional_links": [
         "grpc",
+        "libcryptopp",
+        "libmaxminddb",
+        "librdkafka",
+        "libsodium",
         "mongodb",
         "mypy",
-        "qpid-proton",
         "openblas",
         "openstack-macros",
         "protobuf",
-        "libmaxminddb",
-        "libsodium",
-        "libcryptopp",
+        "qpid-proton",
         "redis",
-        "librdkafka"
+        "subunit"
     ],
     "black_list": [
         "python-rpm",
