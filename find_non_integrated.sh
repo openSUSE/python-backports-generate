@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SUBJ_NONINT='Weekly report on packages in d:l:python*'
+SUBJ='Weekly report on packages in d:l:python*'
 FROM="mcepl@cepl.eu"
 REPORT_ADDR="opensuse-python@opensuse.org"
 TESTED_REPOS="devel:languages:python:Factory devel:languages:python:certbot"
