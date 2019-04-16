@@ -129,7 +129,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Update the backports repo '
                                      'with packages from openSUSE:Factory')
-    parser.add_argument('--obs-api', default='https://api.opensuse.org/',
+    parser.add_argument('--obs-api', default='https://api.opensuse.org',
                         help='The OpenBuildService API to use. Defaults to '
                         '%(default)s')
     parser.add_argument('--backports-project',
