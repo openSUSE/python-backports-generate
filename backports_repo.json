@@ -12,7 +12,9 @@
         "protobuf",
         "qpid-proton",
         "redis",
-        "subunit"
+        "subunit",
+        "xclip",
+        "xsel"
     ],
     "black_list": [
         "python-rpm",
