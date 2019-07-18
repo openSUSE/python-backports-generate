@@ -22,26 +22,36 @@ FACTORY_NAME = "openSUSE:Factory"
 cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
-OBS_cfg = cfg[OBS_API]
+IBS_API = 'https://api.suse.de'
 END_NUM_RE = re.compile(r'\.\d+$');
 
 MAX_PROCS = 100
 
-# available in python >= 3.5
-pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
-pwd_mgr.add_password(realm=None, uri=OBS_API,
-                     user=OBS_cfg['user'],
-                     passwd=OBS_cfg['pass'])
-https_handler = urllib.request.HTTPSHandler(debuglevel=0)
-auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
-# https://build.opensuse.org/apidocs/index
-opener = urllib.request.build_opener(https_handler, auth_handler)
-
-src_URL = "%s/source/{}?expand=1" % OBS_API
-
 failed = queue.Queue()
+src_URL = None
+opener = None
+
+def get_opener(use_IBS=True):
+    # available in python >= 3.5
+    if use_IBS:
+        api = IBS_API
+    else:
+        api = OBS_API
+
+    OBS_cfg = cfg[api]
+    pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
+    pwd_mgr.add_password(realm=None, uri=api,
+                         user=OBS_cfg['user'],
+                         passwd=OBS_cfg['pass'])
+    https_handler = urllib.request.HTTPSHandler(debuglevel=0)
+    auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
+    # https://build.opensuse.org/apidocs/index
+    out = urllib.request.build_opener(https_handler, auth_handler)
+    return out, "%s/source/{}?expand=1" % api
+
 
 def project_list(url):
+    log.debug('url = %s', url)
     with opener.open(url, timeout=10) as response:
         assert response.status == 200
         for event, element in etree.iterparse(response):
@@ -69,9 +79,15 @@ def get_spec_file(proj_name, pname):
 
 
 arg_p = argparse.ArgumentParser(description='Collect all SPEC files for a project.')
-arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME)
+arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME,
+                   help='project name in OBS (e.g., {})'.format(FACTORY_NAME))
+arg_p.add_argument('-I', '--IBS', action='store_true',
+                   help='prefer internal OBS over the public one')
 args = arg_p.parse_args()
 proj = args.project_name
+
+opener, src_URL = get_opener(args.IBS)
+log.debug('src_URL = %s', src_URL)
 
 packages = (x for x in project_list(src_URL.format(proj))
             if END_NUM_RE.search(x) is None)
