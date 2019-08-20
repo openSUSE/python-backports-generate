@@ -25,7 +25,7 @@ OBS_API = 'https://api.opensuse.org'
 IBS_API = 'https://api.suse.de'
 END_NUM_RE = re.compile(r'\.\d+$');
 
-MAX_PROCS = 100
+MAX_PROCS = 20
 
 failed = queue.Queue()
 src_URL = None
