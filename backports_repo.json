@@ -5,7 +5,6 @@
         "libmaxminddb",
         "librdkafka",
         "libsodium",
-        "mongodb",
         "mypy",
         "openblas",
         "openstack-macros",
