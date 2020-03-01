@@ -16,7 +16,6 @@
         "xsel"
     ],
     "black_list": [
-        "python-rpm",
-        "python-Django1"
+        "python-rpm"
     ]
 }
