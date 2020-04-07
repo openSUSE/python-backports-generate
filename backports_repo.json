@@ -1,5 +1,6 @@
 {
     "additional_links": [
+        "git",
         "grpc",
         "libcryptopp",
         "libmaxminddb",
