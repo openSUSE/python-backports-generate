@@ -5,7 +5,6 @@ import logging
 import os.path
 import re
 import queue
-import time
 import sys
 import urllib.error
 import urllib.parse
@@ -23,13 +22,14 @@ cfg = configparser.ConfigParser()
 cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
 OBS_API = 'https://api.opensuse.org'
 IBS_API = 'https://api.suse.de'
-END_NUM_RE = re.compile(r'\.\d+$');
+END_NUM_RE = re.compile(r'\.\d+$')
 
 MAX_PROCS = 20
 
 failed = queue.Queue()
 src_URL = None
 opener = None
+
 
 def get_opener(use_IBS=True):
     # available in python >= 3.5
@@ -78,7 +78,8 @@ def get_spec_file(proj_name, pname):
         return False, pname, ex.code, ex.reason
 
 
-arg_p = argparse.ArgumentParser(description='Collect all SPEC files for a project.')
+arg_p = argparse.ArgumentParser(
+    description='Collect all SPEC files for a project.')
 arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME,
                    help='project name in OBS (e.g., {})'.format(FACTORY_NAME))
 arg_p.add_argument('-I', '--IBS', action='store_true',
@@ -111,6 +112,7 @@ print(file=sys.stderr)
 log.info('Downloaded %d files.', pkg_counter - len(failed_tasks))
 
 for task in failed_tasks:
-    log.error('Downloading of %s failed with status %d:\n%s', task[1], task[2], task[3])
+    log.error('Downloading of %s failed with status %d:\n%s',
+              task[1], task[2], task[3])
 
 sys.exit(0 if len(failed_tasks) == 0 else 1)

@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-import concurrent.futures
 import configparser
 import logging
 import os.path
 import subprocess
-import sys
 import time
 import urllib.request
 import xml.etree.ElementTree as etree
@@ -67,37 +65,6 @@ def linkpac(pkg, proj_source):
     time.sleep(1)
     return ret
 
-
-# backports_python = {x for x in project_list(src_URL.format(project))}
-# factory_python = {x for x in project_list(src_URL.format(factory_name))
-#                   if x.startswith('python')}
-# python_itself = {"python-base", "python3-base", "python", "python3",
-#                  "python-doc", "python3-doc"}
-#
-# # extra packages we want there
-# additional_links = {"libcryptopp", "libsodium", "qpid-proton",
-#                     "python-pycrypto",  # TEMP 2018/07 remove 08
-#                     "openstack-macros", }
-#
-# factory_python = factory_python | additional_links
-#
-# futures = []
-# with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_PROCS) as executor:
-#     # remove packages not in tumbleweed
-#     for package in backports_python - factory_python:
-#         futures.append(executor.submit(rdelete, package, project))
-#
-#     # add packages not in yet
-#     for package in factory_python - python_itself - backports_python:
-#         futures.append(executor.submit(linkpac, package, project))
-#
-# results = []
-# for f in concurrent.futures.as_completed(futures):
-#     results.append(f.result())
-#
-# results = [x for x in results if x != 0]
-#
-# sys.exit(len(results))
 
 broken_packages = list_broken_packages(project)
 for elem in broken_packages:
