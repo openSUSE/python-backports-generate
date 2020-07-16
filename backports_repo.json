@@ -16,7 +16,7 @@
         "xclip",
         "xsel"
     ],
-    "black_list": [
+    "ignore_list": [
         "python-rpm"
     ]
 }

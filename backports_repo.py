@@ -78,7 +78,7 @@ def _get_additional_links_from_config():
             raise KeyError(
                 '"additional_links" not found in configuration file %s' %
                 conf_file)
-    return set(obj['additional_links']), set(obj['black_list'])
+    return set(obj['additional_links']), set(obj['ignore_list'])
 
 
 def main(args):
@@ -96,12 +96,12 @@ def main(args):
     # additional link we want to link from Factory to Backports
     # also, list of all packages which are not Pyhon in the full meaning
     # of the word
-    additional_links, black_list = _get_additional_links_from_config()
+    additional_links, ignore_list = _get_additional_links_from_config()
     log.debug('additional_links = %s' % additional_links)
-    log.debug('black_list = %s' % black_list)
+    log.debug('ignore_list = %s' % ignore_list)
 
     factory_python = factory_python | additional_links
-    factory_python -= black_list
+    factory_python -= ignore_list
     log.debug('factory_python = %s' % factory_python)
 
     futures = []
