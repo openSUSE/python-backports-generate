@@ -16,7 +16,10 @@
         "xclip",
         "xsel"
     ],
-    "ignore_list": [
+    "ignore_list_factory": [
         "python-rpm"
+    ],
+    "ignore_list_backports": [
+        "python-selector34"
     ]
 }

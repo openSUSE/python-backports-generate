@@ -69,7 +69,7 @@ def linkpac(factory_project, pkg, proj_source):
     return ret
 
 
-def _get_additional_links_from_config():
+def _get_from_config():
     conf_file = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'backports_repo.json')
     with io.open(conf_file) as conf_f:
@@ -78,7 +78,7 @@ def _get_additional_links_from_config():
             raise KeyError(
                 '"additional_links" not found in configuration file %s' %
                 conf_file)
-    return set(obj['additional_links']), set(obj['ignore_list'])
+    return obj
 
 
 def main(args):
@@ -96,12 +96,19 @@ def main(args):
     # additional link we want to link from Factory to Backports
     # also, list of all packages which are not Pyhon in the full meaning
     # of the word
-    additional_links, ignore_list = _get_additional_links_from_config()
+    config_json = _get_from_config()
+    additional_links = set(config_json['additional_links'])
+    ignore_list_factory = set(config_json['ignore_list_factory'])
+    ignore_list_backports = set(config_json['ignore_list_backports'])
+
     log.debug('additional_links = %s' % additional_links)
-    log.debug('ignore_list = %s' % ignore_list)
+    log.debug('ignore_list_factory = %s' % ignore_list_factory)
+    log.debug('ignore_list_backports = %s' % ignore_list_backports)
+
+    backports_python -= ignore_list_backports
 
     factory_python = factory_python | additional_links
-    factory_python -= ignore_list
+    factory_python -= ignore_list_factory
     log.debug('factory_python = %s' % factory_python)
 
     futures = []
