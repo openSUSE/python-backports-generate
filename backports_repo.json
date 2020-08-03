@@ -17,7 +17,8 @@
         "xsel"
     ],
     "ignore_list_factory": [
-        "python-rpm"
+        "python-rpm",
+        "python38"
     ],
     "ignore_list_backports": [
         "python-selector34"
