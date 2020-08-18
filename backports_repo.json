@@ -22,6 +22,6 @@
     ],
     "ignore_list_backports": [
         "python-selector34",
-        "python-importlib_metadata"
+        "python-importlib-metadata"
     ]
 }
