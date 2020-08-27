@@ -18,9 +18,9 @@
     ],
     "ignore_list_factory": [
         "python-rpm",
-	"python36",
+        "python36",
         "python38",
-	"python39"
+        "python39"
     ],
     "ignore_list_backports": [
         "python2-zipp",
