@@ -20,7 +20,8 @@
         "python-rpm",
         "python36",
         "python38",
-        "python39"
+        "python39",
+        "python-libvirt-python"
     ],
     "ignore_list_backports": [
         "python2-zipp",
