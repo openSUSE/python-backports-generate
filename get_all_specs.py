@@ -85,10 +85,11 @@ arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME,
 arg_p.add_argument('-I', '--IBS', action='store_true',
                    help='prefer internal OBS over the public one')
 args = arg_p.parse_args()
+log.debug('args = %s', args)
 proj = args.project_name
 
 opener, src_URL = get_opener(args.IBS)
-log.debug('src_URL = %s', src_URL)
+log.debug('src_URL = %s', src_URL.format(proj))
 
 packages = (x for x in project_list(src_URL.format(proj))
             if END_NUM_RE.search(x) is None)
