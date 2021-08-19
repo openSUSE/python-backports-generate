@@ -59,15 +59,15 @@ def project_list(url):
                 yield element.attrib['name']
 
 
-def get_spec_file(proj_name, pname):
+def get_file(proj_name, pname, filename_extension):
     response = None
-    get_URL = src_URL.format('{}/{}/{}.spec').format(
+    get_URL = src_URL.format('{}/{}/{}.' + filename_extension).format(
         urllib.parse.quote(proj_name), pname, pname)
     print(pname[0], file=sys.stderr, end='', flush=True)
     try:
         log.debug('get_URL = %s', get_URL)
         with opener.open(get_URL) as response:
-            with open('{}.spec'.format(pname), 'wb') as outf:
+            with open(('{}.'+filename_extension).format(pname), 'wb') as outf:
                 while True:
                     buf = response.read(1024*8)
                     if not buf:
@@ -84,6 +84,8 @@ arg_p.add_argument('project_name', nargs='?', default=FACTORY_NAME,
                    help='project name in OBS (e.g., {})'.format(FACTORY_NAME))
 arg_p.add_argument('-I', '--IBS', action='store_true',
                    help='prefer internal OBS over the public one')
+arg_p.add_argument('--include-changelog', action='store_true',
+                   help='also fetch changelogs ')
 args = arg_p.parse_args()
 log.debug('args = %s', args)
 proj = args.project_name
@@ -95,11 +97,14 @@ packages = (x for x in project_list(src_URL.format(proj))
             if END_NUM_RE.search(x) is None)
 
 futures = []
-pkg_counter = 0
+file_counter = 0
 with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_PROCS) as executor:
     for id_proj in packages:
-        pkg_counter += 1
-        futures.append(executor.submit(get_spec_file, proj, id_proj))
+        file_counter += 1
+        futures.append(executor.submit(get_file, proj, id_proj, 'spec'))
+        if args.include_changelog:
+            file_counter += 1
+            futures.append(executor.submit(get_file, proj, id_proj, 'changes'))
 
 failed_tasks = []
 for f in concurrent.futures.as_completed(futures):
@@ -110,7 +115,7 @@ for f in concurrent.futures.as_completed(futures):
 log.debug('failed_tasks = %s', failed_tasks)
 
 print(file=sys.stderr)
-log.info('Downloaded %d files.', pkg_counter - len(failed_tasks))
+log.info('Downloaded %d files.', file_counter - len(failed_tasks))
 
 for task in failed_tasks:
     log.error('Downloading of %s failed with status %d:\n%s',
