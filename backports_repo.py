@@ -17,36 +17,15 @@ logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
 log = logging.getLogger('backports_repo')
 
 
-def _get_osc_config(config_file, config_section):
-    """
-    Get the osc (OpenBuildService command line client) config
-    for the the given config_section
-    """
-    if not os.path.exists(config_file):
-        raise Exception('Config file {} does not exist'.format(config_file))
-    cfg = configparser.ConfigParser()
-    cfg.read(os.path.expanduser('~/.config/osc/oscrc'))
-    return cfg[config_section]
-
-
-def _get_opener(obs_api, obs_user, obs_password):
-    # available in python >= 3.5
-    pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
-    pwd_mgr.add_password(realm=None, uri=obs_api,
-                         user=obs_user,
-                         passwd=obs_password)
-    https_handler = urllib.request.HTTPSHandler(debuglevel=0)
-    auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
-    opener = urllib.request.build_opener(https_handler, auth_handler)
-    return opener
-
-
 def project_list(opener, url):
     with opener.open(url, timeout=10) as response:
         assert response.status == 200
         for _, element in etree.iterparse(response):
             if element.tag == 'entry':
-                yield element.attrib['name']
+                if 'originpackage' in element.attrib:
+                    yield element.attrib['originpackage']
+                else:
+                    yield element.attrib['name']
 
 
 def rdelete(factory_project, pkg, proj):
@@ -82,14 +61,18 @@ def _get_from_config():
 
 
 def main(args):
-    osc_cfg = _get_osc_config(os.path.expanduser('~/.config/osc/oscrc'),
-                              args.obs_api)
-    opener = _get_opener(args.obs_api, osc_cfg['user'], osc_cfg['pass'])
-    # packages already in the backports project
-    backports_python = {x for x in project_list(opener, '{}/source/{}'.format(
+    https_handler = urllib.request.HTTPSHandler(debuglevel=0)
+    opener = urllib.request.build_opener(https_handler)
+    # packages in fixup project
+    python_fixup = {x for x in project_list(opener, '{}/public/source/{}:fixups'.format(
         args.obs_api, args.backports_project))}
+    # packages already in the backports project
+    backports_python = {x for x in project_list(opener, '{}/public/source/{}'.format(
+        args.obs_api, args.backports_project))}
+    # ignore packages in fixup project
+    backports_python -= python_fixup
     # packages already in the factory project
-    factory_python = {x for x in project_list(opener, '{}/source/{}'.format(
+    factory_python = {x for x in project_list(opener, '{}/public/source/{}'.format(
         args.obs_api, args.factory_project)) if x.startswith('python')}
     python_itself = {"python-base", "python3-base", "python", "python3",
                      "python-doc", "python3-doc"}
@@ -108,7 +91,7 @@ def main(args):
     backports_python -= ignore_list_backports
 
     factory_python = factory_python | additional_links
-    factory_python -= ignore_list_factory
+    factory_python -= ignore_list_factory | python_fixup
     log.debug('factory_python = %s' % factory_python)
 
     futures = []
