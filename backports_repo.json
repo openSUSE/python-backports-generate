@@ -1,5 +1,6 @@
 {
     "additional_links": [
+        "abseil-cpp",
         "git",
         "grpc",
         "libcryptopp",
