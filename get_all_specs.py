@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import configparser
+import getpass
 import logging
 import os.path
 import re
@@ -40,9 +41,11 @@ def get_opener(use_IBS=True):
 
     OBS_cfg = cfg[api]
     pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
+    OBS_user = OBS_cfg['user'] if 'user' in OBS_cfg else input('Login: ')
+    OBS_pass = OBS_cfg['pass'] if 'pass' in OBS_cfg else getpass.getpass()
     pwd_mgr.add_password(realm=None, uri=api,
-                         user=OBS_cfg['user'],
-                         passwd=OBS_cfg['pass'])
+                         user=OBS_user,
+                         passwd=OBS_pass)
     https_handler = urllib.request.HTTPSHandler(debuglevel=0)
     auth_handler = urllib.request.HTTPBasicAuthHandler(pwd_mgr)
     # https://build.opensuse.org/apidocs/index
