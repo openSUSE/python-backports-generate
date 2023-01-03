@@ -3,6 +3,7 @@
         "abseil-cpp",
         "git",
         "grpc",
+        "jupyter",
         "libcryptopp",
         "libmaxminddb",
         "librdkafka",
