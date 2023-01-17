@@ -13,6 +13,11 @@ import urllib.request
 import xml.etree.ElementTree as etree
 import concurrent.futures
 
+try:
+    import keyring
+except (ImportError, ModuleNotFoundError):
+    keyring = None
+
 logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
                     level=logging.INFO)
 log = logging.getLogger('get_all_specs')
@@ -42,7 +47,13 @@ def get_opener(use_IBS=True):
     OBS_cfg = cfg[api]
     pwd_mgr = urllib.request.HTTPPasswordMgrWithPriorAuth()
     OBS_user = OBS_cfg['user'] if 'user' in OBS_cfg else input('Login: ')
-    OBS_pass = OBS_cfg['pass'] if 'pass' in OBS_cfg else getpass.getpass()
+    if 'pass' in OBS_cfg:
+        OBS_pass = OBS_cfg['pass']
+    elif keyring is not None:
+        OBS_domain = urllib.parse.urlparse(api).netloc
+        OBS_pass = keyring.get_password(OBS_domain, OBS_user)
+    else:
+        OBS_pass = getpass.getpass()
     pwd_mgr.add_password(realm=None, uri=api,
                          user=OBS_user,
                          passwd=OBS_pass)
