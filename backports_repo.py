@@ -12,8 +12,6 @@ import time
 import urllib.request
 import xml.etree.ElementTree as etree
 
-logging.basicConfig(format='%(levelname)s:%(funcName)s:%(message)s',
-                    level=logging.INFO)
 log = logging.getLogger('backports_repo')
 
 
@@ -61,6 +59,10 @@ def _get_from_config():
 
 
 def main(args):
+    logging.basicConfig(
+        format='%(levelname)s:%(funcName)s:%(message)s',
+        level=logging.DEBUG if args.debug else logging.INFO)
+
     https_handler = urllib.request.HTTPSHandler(debuglevel=0)
     opener = urllib.request.build_opener(https_handler)
     # packages in fixup project
@@ -119,6 +121,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Update the backports repo '
                                      'with packages from openSUSE:Factory')
+    parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('--obs-api', default='https://api.opensuse.org',
                         help='The OpenBuildService API to use. Defaults to '
                         '%(default)s')
