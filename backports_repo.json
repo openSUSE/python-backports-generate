@@ -4,7 +4,6 @@
         "git",
         "grpc",
         "jupyter",
-        "jupyter-filesystem",        
         "libcryptopp",
         "libmaxminddb",
         "librdkafka",
