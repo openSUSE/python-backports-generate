@@ -20,9 +20,11 @@
     ],
     "ignore_list_factory": [
         "python-rpm",
-        "python36",
         "python38",
         "python39",
+        "python310",
+        "python311",
+        "python312",
         "python-libvirt-python"
     ],
     "ignore_list_backports": [
