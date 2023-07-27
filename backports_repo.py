@@ -27,7 +27,7 @@ def project_list(opener, url):
 
 
 def rdelete(factory_project, pkg, proj):
-    msg = "Package {} not in whitelist or {}".format(pkg, factory_project)
+    msg = "Package {} not in allowlist or {}".format(pkg, factory_project)
     log.info("osc rdelete %(msg)s %(proj)s %(pkg)s" % {
         'msg': msg, 'proj': proj, 'pkg': pkg})
     ret = subprocess.call(['osc', 'rdelete', '-m', msg, proj, pkg])

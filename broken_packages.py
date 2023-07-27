@@ -54,7 +54,7 @@ def list_broken_packages(proj):
 
 
 def rdelete(pkg, proj):
-    msg = "Package {} not in whitelist or {}".format(pkg, factory_name)
+    msg = "Package {} not in allowlist or {}".format(pkg, factory_name)
     ret = subprocess.call(['osc', 'rdelete', '-m', msg, proj, pkg])
     time.sleep(1)
     return ret
