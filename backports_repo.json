@@ -8,7 +8,6 @@
         "libmaxminddb",
         "librdkafka",
         "libsodium",
-        "mypy",
         "openblas",
         "openstack-macros",
         "protobuf",
