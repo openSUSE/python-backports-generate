@@ -11,6 +11,7 @@
         "openblas",
         "openstack-macros",
         "protobuf",
+        "pyenv",
         "qpid-proton",
         "redis",
         "subunit",
