@@ -14,6 +14,7 @@
         "pyenv",
         "qpid-proton",
         "redis",
+        "re2",
         "subunit",
         "xclip",
         "xsel"
