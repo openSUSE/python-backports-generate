@@ -2,6 +2,7 @@
     "additional_links": [
         "abseil-cpp",
         "git",
+        "gpgme",
         "grpc",
         "jupyter",
         "libcryptopp",
