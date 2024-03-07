@@ -27,6 +27,8 @@
         "python310",
         "python311",
         "python312",
+        "python313",
+        "python-3.9-image",
         "python-3.10-image",
         "python-3.11-image",
         "python-3.12-image",
