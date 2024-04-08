@@ -35,7 +35,5 @@
         "python-libvirt-python"
     ],
     "ignore_list_backports": [
-        "python2-zipp",
-        "python-selector34"
     ]
 }
