@@ -21,6 +21,7 @@
         "xsel"
     ],
     "ignore_list_factory": [
+        "python-kiwi",
         "python-rpm",
         "python38",
         "python39",
