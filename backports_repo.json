@@ -14,7 +14,7 @@
         "protobuf",
         "pyenv",
         "qpid-proton",
-        "redis",
+        "valkey",
         "re2",
         "subunit",
         "xclip",
