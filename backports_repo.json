@@ -29,10 +29,13 @@
         "python311",
         "python312",
         "python313",
+        "python314",
         "python-3.9-image",
         "python-3.10-image",
         "python-3.11-image",
         "python-3.12-image",
+        "python-3.13-image",
+        "python-3.14-image",
         "python-libvirt-python"
     ],
     "ignore_list_backports": [
