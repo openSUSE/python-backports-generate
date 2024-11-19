@@ -18,7 +18,8 @@
         "re2",
         "subunit",
         "xclip",
-        "xsel"
+        "xsel",
+        "zlib-ng"
     ],
     "ignore_list_factory": [
         "python-kiwi",
