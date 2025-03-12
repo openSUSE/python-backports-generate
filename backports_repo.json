@@ -4,6 +4,7 @@
         "git",
         "gpgme",
         "grpc",
+        "influxdb2",
         "jupyter",
         "libcryptopp",
         "libmaxminddb",
