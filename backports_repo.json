@@ -1,6 +1,7 @@
 {
     "additional_links": [
         "abseil-cpp",
+        "flux",
         "git",
         "gpgme",
         "grpc",
