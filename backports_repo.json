@@ -24,6 +24,7 @@
     "ignore_list_factory": [
         "python-kiwi",
         "python-rpm",
+        "python-rpm-macros",
         "python38",
         "python39",
         "python310",
