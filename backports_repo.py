@@ -48,7 +48,7 @@ def linkpac(factory_project, pkg, proj_source):
 
 def _get_from_config():
     conf_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'backports_repo.json')
+        os.path.dirname(os.path.realpath(__file__)), 'backports_repo.json')
     with io.open(conf_file) as conf_f:
         obj = json.load(conf_f)
         if 'additional_links' not in obj:
