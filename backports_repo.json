@@ -1,6 +1,7 @@
 {
     "additional_links": [
         "abseil-cpp",
+        "apache-arrow",
         "git",
         "gpgme",
         "grpc",
